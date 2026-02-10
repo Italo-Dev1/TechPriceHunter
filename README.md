@@ -1,7 +1,7 @@
 # 🤖 TechPriceHunter
 
-TechPriceHunter é um robô desenvolvido em **Python utilizando Selenium** para automatizar a busca de produtos em grandes lojas de hardware brasileiras como **KaBuM e Pichau**.
-O usuário informa o nome do produto desejado e o sistema realiza a busca automaticamente, coletando todos os produtos encontrados, registrando logs com links e gerando um arquivo Excel com os resultados.
+TechPriceHunter é um robô desenvolvido em **Python utilizando Selenium** para automatizar a busca de produtos em grandes lojas de hardware brasileiras como **KaBuM**.
+O usuário informa o nome do produto desejado e o sistema realiza a busca automaticamente, coletando todos os produtos encontrados, registrando logs com links e gerando um arquivo Excel com os resultados caso deseje.
 
 ---
 
@@ -23,9 +23,8 @@ O usuário informa o nome do produto desejado e o sistema realiza a busca automa
 - Pandas  
 - OpenPyXL  
 - Git & GitHub  
-
+- SQLite 
 ### Planejado
-- MySQL  
-- Django  
+- Projeto de apresentação dos dados me Django (em Desenvolvimento)  
 
 ---

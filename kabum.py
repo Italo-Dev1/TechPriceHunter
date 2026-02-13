@@ -2,14 +2,14 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as ec
-from utils import limpa_texto, moeda_para_float
-import logging
+from utils import *
 import time
+from models import Produto
+
 
 url_kabum = "https://www.kabum.com.br"
 
-
-def troca_pagina_kabum(driver):
+def troca_pagina_kabum(driver, logging=None):
     try:
         if not driver.execute_script("""return document.querySelector('a.nextLink')?.ariaDisabled === "true";"""):
             driver.execute_script("document.getElementsByClassName('nextLink')[0].click();")
@@ -24,7 +24,13 @@ def troca_pagina_kabum(driver):
     return True
 
 
-def coleta_kabum(driver, produto_alvo=None, lista_produtos_kabum=None):
+def coleta_kabum(driver,
+                 produto_alvo=None,
+                 lista_produtos_kabum=None,
+                 logging=None,
+                 gerar_excel=None,
+                 cur=None,
+                 conn=None):
     try:
         logging.info(f"Buscando na kabum, produto: {produto_alvo}")
         driver.get(url_kabum)
@@ -71,28 +77,43 @@ def coleta_kabum(driver, produto_alvo=None, lista_produtos_kabum=None):
             soup = BeautifulSoup(driver.page_source, "html.parser")
             produtos = soup.select("article.productCard")
             for produto in produtos:
-
                 nome_produto = produto.select_one("span.nameCard").text
                 valor_total = moeda_para_float(produto.select_one("span.priceCard").text)
                 fp_valor_total = produto.select_one("div.priceTextCard").contents[0].text
                 parcelamento_total = " ".join(produto.select_one("div.priceTextCard").contents[1].text.split(" ")[1::])
                 link_produto = f"""{url_kabum}{produto.select_one("a").get("href")}"""
 
+                produto_obj = Produto(
+                    nome_produto,
+                    valor_total,
+                    fp_valor_total,
+                    parcelamento_total,
+                    link_produto
+                )
+
                 log_txt = limpa_texto(
-                    f"{nome_produto} | {fp_valor_total} | {valor_total} | {parcelamento_total} | {link_produto}",
+                    f"{produto_obj.nome_produto} | "
+                    f"{produto_obj.forma_pagamento} | "
+                    f"{produto_obj.valor_total} | "
+                    f"{produto_obj.parcelamento} | "
+                    f"{produto_obj.link_produto}",
                     ["–", "\u202f", "\xa0"]
                 )
                 logging.info(log_txt)
+                if gerar_excel:
+                    lista_produtos_kabum.append([
+                        nome_produto,
+                        fp_valor_total,
+                        valor_total,
+                        parcelamento_total,
+                        link_produto
+                    ])
+                else:
+                    if not grava_item_banco(cur, conn, logging, produto_obj):
+                        logging.info(f"Erro ao gravar item no banco: {produto_obj.nome_produto}")
+                        return False
 
-                lista_produtos_kabum.append([
-                    nome_produto,
-                    fp_valor_total,
-                    valor_total,
-                    parcelamento_total,
-                    link_produto
-                ])
-
-            if not troca_pagina_kabum(driver):
+            if not troca_pagina_kabum(driver, logging):
                 break
             else:
                 pg += 1

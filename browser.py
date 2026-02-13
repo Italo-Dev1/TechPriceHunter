@@ -1,15 +1,14 @@
-import logging
 import psutil
 from selenium import webdriver
 
 
-def cria_driver(headless = False):
+def cria_driver(headless=False, logging=None):
     try:
         options = webdriver.FirefoxOptions()
         if headless:
             options.add_argument("--headless")
-
         profile = webdriver.FirefoxProfile()
+        profile.set_preference("javascript.enabled", True)
         profile.set_preference(
             "general.useragent.override",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
@@ -32,7 +31,7 @@ def cria_driver(headless = False):
         return None
 
 
-def fecha_navegador(driver):
+def fecha_navegador(driver, logging):
     if not driver:
         return
 
